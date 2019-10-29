@@ -1,36 +1,53 @@
 # find readme
 
+`find-readme` - Find README.md under path.
+
+## DON'T USE THIS
+
+This App is a sample implementation for using `path/filepath/Walk`.  
+Use [the_silver_searcher](https://github.com/ggreer/the_silver_searcher) is more faster and powerful 😌
+
+```sh
+$ function find-readme { ag -l "" ${1:?} | ag -i 'readme.md'; }
+$ find-readme ~/go
+```
+
+see [benchmark](./bench.md)
+
 ## Usage
 
 ```
-NAME:
-   find-readme - Find All README.md under path.
+$ find-readme [global options] command [command options] path ...
+```
 
-USAGE:
-   main [global options] command [command options] path ...
+### COMMANDS:
+```
+help, h  Shows a list of commands or help for one command
+```
 
-VERSION:
-   0.1.0
-
-AUTHOR:
-   Michito Maeda <https://twitter.com/michitomaeda>
-
-COMMANDS:
-   help, h  Shows a list of commands or help for one command
-
-GLOBAL OPTIONS:
-   --help, -h     show help
-   --version, -v  print the version
-
-ISSUES:
-    https://github.com/micheam/find-readme/issues
+### GLOBAL OPTIONS:
+```
+--ignore name, -i name  Directory name to ignore.
+--help, -h              show help
+--version, -v           print the version
 ```
 
 ## Installation
-
 ```
 $ go get github.com/micheam/find-readme
 ```
+
+## Example
+
+Show All readme.md or README.md under _$HOME/go_:
+
+    $ find-readme $HOME/go
+
+Same as above but ignore some directory [^1]:
+
+    $ find-readme --ignore pkg --ignore golang.org $HOME/go
+
+[^1]: `node_modules` will always ignored.
 
 ## License
 MIT

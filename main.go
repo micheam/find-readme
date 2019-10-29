@@ -14,9 +14,10 @@ const (
 	repository string = "https://github.com/micheam/find-readme"
 )
 
-var ignoreDir = "node_modules"
-
 func init() {
+	cli.AppHelpTemplate += "\nEXAMPLE:"
+	cli.AppHelpTemplate += "\n    $ find-readme -i skip-me -i skip-me-too $HOME/go"
+	cli.AppHelpTemplate += "\n"
 	cli.AppHelpTemplate += "\nISSUES:"
 	cli.AppHelpTemplate += "\n    " + repository + "/issues"
 	cli.AppHelpTemplate += "\n"
@@ -34,6 +35,12 @@ func main() {
 		},
 	}
 	app.ArgsUsage = "path ..."
+	app.Flags = []cli.Flag{
+		cli.StringSliceFlag{
+			Name:  "ignore, i",
+			Usage: "Directory `name` to ignore.",
+		},
+	}
 	app.Action = action
 
 	if err := app.Run(os.Args); err != nil {
@@ -42,11 +49,26 @@ func main() {
 	}
 }
 
+type ignoreDirs []string
+
+func (i ignoreDirs) contains(name string) bool {
+	for _, e := range i {
+		if e == name {
+			return true
+		}
+	}
+	return false
+}
+
 func action(c *cli.Context) error {
+
 	if !c.Args().Present() {
 		_ = cli.ShowAppHelp(c)
 		return errors.New("No path specified :(")
 	}
+
+	var igs ignoreDirs = c.StringSlice("ignore")
+	igs = append(igs, "node_modules")
 
 	for _, target := range c.Args() {
 		var fn filepath.WalkFunc = func(path string, info os.FileInfo, err error) error {
@@ -54,16 +76,16 @@ func action(c *cli.Context) error {
 				return nil
 			}
 			if info.IsDir() {
-				if info.Name() == ignoreDir {
+				if igs.contains(info.Name()) {
 					return filepath.SkipDir
 				}
 				return nil
 			}
 
 			name := info.Name()
-			switch name {
-			case "readme.md", "README.md", "readme.markdown", "README.markdown":
+			if name == "readme.md" || name == "README.md" {
 				fmt.Println(filepath.Join(path))
+				return nil
 			}
 			return nil
 		}
